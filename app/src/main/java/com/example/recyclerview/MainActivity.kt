@@ -28,11 +28,11 @@ class MainActivity : AppCompatActivity() {
     // создали алаптер
     adapter = UsersAdapter(object : UserActionListener {
       override fun onUserMove(user: User, moveBy: Int) {
-        TODO("Not yet implemented")
+        usersService.moveUser(user, moveBy)
       }
 
       override fun onUserDelete(user: User) {
-        TODO("Not yet implemented")
+        usersService.deleteUser(user)
       }
 
       override fun onUserDetails(user: User) {

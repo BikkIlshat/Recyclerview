@@ -33,7 +33,7 @@ class UsersService {
 
   fun getUsers(): List<User> = users
 
-  fun deleteUsers(user: User) {
+  fun deleteUser(user: User) {
     // т.к. User это data class то удалять можно на прямую
     val indexToDelete = users.indexOfFirst { it.id == user.id }
     if (indexToDelete != -1)
