@@ -1,13 +1,25 @@
 package com.example.recyclerview
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.recyclerview.databinding.ItemUserBinding
 import com.example.recyclerview.model.User
 
-class UsersAdapter : RecyclerView.Adapter<UsersAdapter.UsersViewHolder>() {
+interface UserActionListener {
+
+  fun onUserMove(user: User, moveBy: Int) // перемещение вверх или вниз
+
+  fun onUserDelete(user: User) // удаление пользователя
+
+  fun onUserDetails(user: User) // нажатие на какой-то элемент списка
+}
+
+class UsersAdapter(
+  private val actionListener: UserActionListener
+) : RecyclerView.Adapter<UsersAdapter.UsersViewHolder>(), View.OnClickListener {
 
   // список пользователей (по умолчанию будет пустым)
   var users: List<User> = emptyList()
@@ -18,6 +30,21 @@ class UsersAdapter : RecyclerView.Adapter<UsersAdapter.UsersViewHolder>() {
       notifyDataSetChanged()
     }
 
+
+  override fun onClick(view: View) { // <- тут view никогда не равна null
+    // тут будем пробовать вытащить пользователя
+    val user = view.tag as User // <- так как тут вытаскивыаем пользователя из tag
+    //это значит что этого пользователч где то нужно в этот tag положить (это делается в методе onBindViewHolder)
+  when(view.id) {
+    R.id.moreImageViewButton -> {
+    // todo
+    }
+    else -> {
+      actionListener.onUserDetails(user)
+    }
+  }
+
+  }
 
   //адаптер должен знать сколько элементов в списке
   // метод возвращает кол-во этих элементов
@@ -32,6 +59,10 @@ class UsersAdapter : RecyclerView.Adapter<UsersAdapter.UsersViewHolder>() {
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UsersViewHolder {
     val inflater = LayoutInflater.from(parent.context)
     val binding = ItemUserBinding.inflate(inflater, parent, false)
+
+    binding.root.setOnClickListener(this) // слушатель на нажатие элемента списка
+    binding.moreImageViewButton.setOnClickListener(this) // слушатель на нажатие кнопки more
+    //setOnClickListener(this)        this - потому что наш адаптер реалезует интерфейс  View.OnClickListener
     return UsersViewHolder(binding)
   }
 
@@ -43,6 +74,9 @@ class UsersAdapter : RecyclerView.Adapter<UsersAdapter.UsersViewHolder>() {
   override fun onBindViewHolder(holder: UsersViewHolder, position: Int) {
     val user = users[position] // теперь этого пользователч нужжно отрисовать с помощью  holder
     with(holder.binding) {
+      // на всех компонентах на которые пользователь может нажать мы должны этот "tag" проинициализировать
+      holder.itemView.tag = user // пользователь может нажать на самом элементе списка
+      moreImageViewButton.tag = user // пользователь может нажать на кнопку more
       userNameTextView.text = user.name
       userCompanyTextView.text = user.company
       if (user.photo.isNotBlank()) {
@@ -63,5 +97,4 @@ class UsersAdapter : RecyclerView.Adapter<UsersAdapter.UsersViewHolder>() {
   class UsersViewHolder(
     val binding: ItemUserBinding,
   ) : RecyclerView.ViewHolder(binding.root)
-
 }

@@ -1,9 +1,11 @@
 package com.example.recyclerview
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.recyclerview.databinding.ActivityMainBinding
+import com.example.recyclerview.model.User
 import com.example.recyclerview.model.UsersListener
 import com.example.recyclerview.model.UsersService
 
@@ -23,7 +25,22 @@ class MainActivity : AppCompatActivity() {
     binding = ActivityMainBinding.inflate(layoutInflater)
     setContentView(binding.root)
 
-    adapter = UsersAdapter() // создали алаптер
+    // создали алаптер
+    adapter = UsersAdapter(object : UserActionListener {
+      override fun onUserMove(user: User, moveBy: Int) {
+        TODO("Not yet implemented")
+      }
+
+      override fun onUserDelete(user: User) {
+        TODO("Not yet implemented")
+      }
+
+      override fun onUserDetails(user: User) {
+        Toast.makeText(this@MainActivity, "User: ${user.name}", Toast.LENGTH_SHORT).show()
+      }
+
+    })
+
     val layoutManager = LinearLayoutManager(this) // инициализировали как будут отображаться наш список (вертикально или горизонтально)
     binding.recyclerView.layoutManager = layoutManager // назначали для нашего  recyclerView layoutManager который LinearLayoutManager
     binding.recyclerView.adapter = adapter // назначали для нашего  recyclerView adapter который мы созздали
