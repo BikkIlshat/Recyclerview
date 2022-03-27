@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.recyclerview.databinding.ItemUserBinding
@@ -16,14 +17,40 @@ interface UserActionListener {
   fun onUserDetails(user: User)
 }
 
+class UsersDiffCallback(
+  private val oldList: List<User>,
+  private val newList: List<User>,
+) : DiffUtil.Callback(){
+  override fun getOldListSize(): Int = oldList.size
+  override fun getNewListSize(): Int  = newList.size
+
+  override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+    val oldUser = oldList[oldItemPosition]     // oldItemPosition - индекс элемента старого списка
+    val newUser = newList[newItemPosition]     // newItemPosition - индекс элемента нового списка
+    return oldUser.id == newUser.id
+  }
+
+  // Сравнивает содержимое элеменов
+  override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+    val oldUser = oldList[oldItemPosition]     // oldItemPosition - индекс элемента старого списка
+    val newUser = newList[newItemPosition]     // newItemPosition - индекс элемента нового списка
+    return oldUser == newUser
+  }
+
+}
+
+
 class UsersAdapter(
   private val actionListener: UserActionListener
 ) : RecyclerView.Adapter<UsersAdapter.UsersViewHolder>(), View.OnClickListener {
 
   var users: List<User> = emptyList()
     set(newValue) {
+      // берем старывый список и посчитаем разницу
+      val diffUtilCallback = UsersDiffCallback(field, newValue)
+      val diffResult = DiffUtil.calculateDiff(diffUtilCallback)
       field = newValue
-      notifyDataSetChanged()
+      diffResult.dispatchUpdatesTo(this)
     }
 
   override fun onClick(view: View) {

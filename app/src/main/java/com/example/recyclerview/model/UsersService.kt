@@ -30,10 +30,10 @@ class UsersService {
   fun getUsers(): List<User> = users
 
   fun deleteUser(user: User) {
-    // т.к. User это data class то удалять можно на прямую
     val indexToDelete = users.indexOfFirst { it.id == user.id }
-    if (indexToDelete != -1)
-      users.removeAt(indexToDelete)
+    if (indexToDelete != -1) // если мы нашли индекс пользователя
+      users = ArrayList(users) // то мы будем создавать новый список на базе старого
+      users.removeAt(indexToDelete)  // и далее в новом списке мы удаляем элемет
     notifyChanges()
   }
 
@@ -43,8 +43,8 @@ class UsersService {
     val newIndex =
       oldIndex + moveBy
     if (newIndex < 0 || newIndex >= users.size) return
+    users = ArrayList(users)
     Collections.swap(users, oldIndex, newIndex)
-
     notifyChanges()
   }
 

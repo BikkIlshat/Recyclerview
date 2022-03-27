@@ -32,7 +32,6 @@ class MainActivity : AppCompatActivity() {
       override fun onUserDetails(user: User) {
         Toast.makeText(this@MainActivity, "User: ${user.name}", Toast.LENGTH_SHORT).show()
       }
-
     })
 
     val layoutManager = LinearLayoutManager(this)
