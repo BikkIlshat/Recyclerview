@@ -30,7 +30,7 @@ class UsersService {
   fun getUsers(): List<User> = users
 
   fun deleteUser(user: User) {
-    val indexToDelete = users.indexOfFirst { it.id == user.id }
+    val indexToDelete = findIndexById(user.id)
     if (indexToDelete != -1) // если мы нашли индекс пользователя
       users = ArrayList(users) // то мы будем создавать новый список на базе старого
       users.removeAt(indexToDelete)  // и далее в новом списке мы удаляем элемет
@@ -48,6 +48,15 @@ class UsersService {
     notifyChanges()
   }
 
+  fun fireUser(user: User) {
+    val index = findIndexById(user.id)
+    if (index == -1) return
+    val updatedUser = users[index].copy(company = "")
+    users = ArrayList(users)
+    users[index] = updatedUser
+    notifyChanges()
+  }
+
   fun addListener(listener: UsersListener) {
     listeners.add(listener)
     listener.invoke(users)
@@ -60,6 +69,8 @@ class UsersService {
   private fun notifyChanges() {
     listeners.forEach { it.invoke(users) }
   }
+
+  private fun findIndexById(userId: Long): Int = users.indexOfFirst { it.id == userId }
 
   companion object {
     private val IMAGES: MutableList<String> = mutableListOf(

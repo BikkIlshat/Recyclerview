@@ -15,14 +15,15 @@ interface UserActionListener {
   fun onUserMove(user: User, moveBy: Int)
   fun onUserDelete(user: User)
   fun onUserDetails(user: User)
+  fun onUserFire(user: User)
 }
 
 class UsersDiffCallback(
   private val oldList: List<User>,
   private val newList: List<User>,
-) : DiffUtil.Callback(){
+) : DiffUtil.Callback() {
   override fun getOldListSize(): Int = oldList.size
-  override fun getNewListSize(): Int  = newList.size
+  override fun getNewListSize(): Int = newList.size
 
   override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
     val oldUser = oldList[oldItemPosition]     // oldItemPosition - индекс элемента старого списка
@@ -41,7 +42,7 @@ class UsersDiffCallback(
 
 
 class UsersAdapter(
-  private val actionListener: UserActionListener
+  private val actionListener: UserActionListener,
 ) : RecyclerView.Adapter<UsersAdapter.UsersViewHolder>(), View.OnClickListener {
 
   var users: List<User> = emptyList()
@@ -55,14 +56,14 @@ class UsersAdapter(
 
   override fun onClick(view: View) {
     val user = view.tag as User
-  when(view.id) {
-    R.id.moreImageViewButton -> {
+    when (view.id) {
+      R.id.moreImageViewButton -> {
         showPopupMenu(view)
+      }
+      else -> {
+        actionListener.onUserDetails(user)
+      }
     }
-    else -> {
-      actionListener.onUserDetails(user)
-    }
-  }
   }
 
   override fun getItemCount(): Int = users.size
@@ -78,11 +79,13 @@ class UsersAdapter(
 
   override fun onBindViewHolder(holder: UsersViewHolder, position: Int) {
     val user = users[position]
+    val context = holder.itemView.context
     with(holder.binding) {
       holder.itemView.tag = user
       moreImageViewButton.tag = user
       userNameTextView.text = user.name
-      userCompanyTextView.text = user.company
+      userCompanyTextView.text = if (user.company.isNotBlank())
+        user.company else context.getString(R.string.unemployed)
       if (user.photo.isNotBlank()) {
         Glide.with(photoImageView.context)
           .load(user.photo)
@@ -110,7 +113,9 @@ class UsersAdapter(
       isEnabled = position < users.size - 1
     }
     popupMenu.menu.add(0, ID_REMOVE, Menu.NONE, context.getString(R.string.remove))
-
+    if (user.company.isNotBlank()) {
+      popupMenu.menu.add(0, ID_FIRE, Menu.NONE, context.getString(R.string.fire))
+    }
     popupMenu.setOnMenuItemClickListener {
       when (it.itemId) {
         ID_MOVE_UP -> {
@@ -121,6 +126,9 @@ class UsersAdapter(
         }
         ID_REMOVE -> {
           actionListener.onUserDelete(user)
+        }
+        ID_FIRE -> {
+          actionListener.onUserFire(user)
         }
       }
       return@setOnMenuItemClickListener true
@@ -136,5 +144,6 @@ class UsersAdapter(
     private const val ID_MOVE_UP = 1
     private const val ID_MOVE_DOWN = 2
     private const val ID_REMOVE = 3
+    private const val ID_FIRE = 4
   }
 }
