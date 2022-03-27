@@ -10,56 +10,50 @@ typealias UsersListener = (users: List<User>) -> Unit
 
 class UsersService {
 
-  // создали переменнаую user которач  хранит в себе список пользователей, т.к. нет сети то это просто локальная переменная со списком
   private var users = mutableListOf<User>()
 
   private val listeners = mutableSetOf<UsersListener>()
 
-  // В блоке init слуайным образом проиницаилизируем пользователей
   init {
     val faker = Faker.instance()
-    IMAGES.shuffle() // перемешиваем наши изображения
+    IMAGES.shuffle()
     users = (1..100).map {
       User(
         id = it.toLong(),
         name = faker.name().name(),
         company = faker.company().name(),
-        photo = IMAGES[it % IMAGES.size] // для того чтобы изображения слишком часто не повторялись
+        photo = IMAGES[it % IMAGES.size]
       )
     }.toMutableList()
   }
 
-  // методы которые позволят производить некоторые операции с пользователями в списке
-
   fun getUsers(): List<User> = users
 
   fun deleteUser(user: User) {
-    // т.к. User это data class то удалять можно на прямую
-    val indexToDelete = users.indexOfFirst { it.id == user.id }
-    if (indexToDelete != -1)
-      users.removeAt(indexToDelete)
+    val indexToDelete = findIndexById(user.id)
+    if (indexToDelete != -1) // если мы нашли индекс пользователя
+      users = ArrayList(users) // то мы будем создавать новый список на базе старого
+      users.removeAt(indexToDelete)  // и далее в новом списке мы удаляем элемет
     notifyChanges()
   }
 
-  /*
-  user - >  пользователь которого мы перемещаем
-  moveBy: Int - > куда его переместить
-  moveBy - если == 1 то мы его перемещаем вверх по индексу в списке (на эмуляторе пользователь будет перемещен вниз)
-  moveBy - если == -1 то мы его перемещаем ВНИЗ по индексу в списке (на эмуляторе пользователь будет перемещен ВВЕРХ)
-
-   */
-
   fun moveUser(user: User, moveBy: Int) {
-    val oldIndex = users.indexOfFirst { it.id == user.id } // ищем старый индекс пользователя
-    if (oldIndex == -1) return // сравниваем что он не равен 1
+    val oldIndex = users.indexOfFirst { it.id == user.id }
+    if (oldIndex == -1) return
     val newIndex =
-      oldIndex + moveBy // считаем новый индекс пользователя, который равен старому индексу + значению moveBy
-    if (newIndex < 0 || newIndex >= users.size) return // проверяем что новый инлдекс не выходит за границы списка, если выходит делаем return
-    Collections.swap(users, oldIndex, newIndex)//  если всё ок меняем элементы местами
-/* первый аргумент users -> список в котором будем  менять элементы местамми
- oldIndex, newIndex -> индексы старый и новый  т.к. на новом индексе будет находиться какой то другой элемент списка
- поэтому мы их просто меняем местами
- */
+      oldIndex + moveBy
+    if (newIndex < 0 || newIndex >= users.size) return
+    users = ArrayList(users)
+    Collections.swap(users, oldIndex, newIndex)
+    notifyChanges()
+  }
+
+  fun fireUser(user: User) {
+    val index = findIndexById(user.id)
+    if (index == -1) return
+    val updatedUser = users[index].copy(company = "")
+    users = ArrayList(users)
+    users[index] = updatedUser
     notifyChanges()
   }
 
@@ -75,6 +69,8 @@ class UsersService {
   private fun notifyChanges() {
     listeners.forEach { it.invoke(users) }
   }
+
+  private fun findIndexById(userId: Long): Int = users.indexOfFirst { it.id == userId }
 
   companion object {
     private val IMAGES: MutableList<String> = mutableListOf(
