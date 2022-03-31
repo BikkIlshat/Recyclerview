@@ -4,6 +4,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.recyclerview.App
+import com.example.recyclerview.Navigator
 
 
 /***
@@ -24,6 +25,9 @@ class ViewModelFactory(
             UsersListViewModel::class.java -> { // если он равен UsersListViewModel class
                 UsersListViewModel(app.usersService) // то мы создаём UsersListViewModel и в конструктор передаём (app.usersService)
             }
+            UserDetailsViewModel:: class.java -> {
+                UserDetailsViewModel(app.usersService)
+            }
             else -> {
                 throw IllegalAccessException("Unknown view model class")
             }
@@ -41,3 +45,5 @@ fun Fragment.factory() = ViewModelFactory(requireContext().applicationContext as
 для того что бы каждый раз не писать ViewModelFactory передавать туда private val app: App
 это для Лаконичности
  */
+
+fun Fragment.navigator() = requireActivity() as Navigator

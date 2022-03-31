@@ -37,7 +37,9 @@ class UsersListFragment : Fragment(R.layout.fragment_users_list) {
                 viewModel.deleteUser(user)
             }
 
+            // когла мы нажимаем на какой либо элемент в списке у нас вызывается метод:
             override fun onUserDetails(user: User) {
+                navigator().showDetails(user)
 
             }
 
